@@ -1,0 +1,781 @@
+/* =========================================================
+   TOKENS
+========================================================= */
+:root{
+  --primary: #0B5ED7;
+  --primary-dark: #084bb0;
+  --primary-tint: #e8f0fd;
+  --ink: #1c2330;
+  --ink-soft: #57606f;
+  --hairline: #dfe4ee;
+  --canvas: #eef2f9;
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --danger: #d64545;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow-sm: 0 1px 2px rgba(23,43,77,.06), 0 1px 1px rgba(23,43,77,.04);
+  --shadow-md: 0 8px 24px rgba(23,43,77,.08), 0 2px 6px rgba(23,43,77,.05);
+  --shadow-lg: 0 20px 50px rgba(15,30,60,.16);
+  --font-ui: 'Poppins', system-ui, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+  /* Printable-document typeface: system Georgia (falls back to Cambria/Times) so the
+     cover & index sheets always render with a proper serif — even offline / mid-print,
+     with no dependency on a webfont finishing its download before html2canvas snapshots it. */
+  --font-cover: Georgia, Cambria, 'Times New Roman', 'Noto Serif', serif;
+  --topbar-h: 62px;
+
+  /* Cover/Index CONTENT accent — deliberately independent from --primary (the
+     app's UI theme colour) so a customised cover page looks the same whether
+     the editor itself is in light or dark mode. Defaults match --primary. */
+  --cover-accent: #0B5ED7;
+  --cover-accent-dark: #084bb0;
+  --cover-accent-tint: #e8f0fd;
+}
+
+[data-theme="dark"]{
+  --primary: #4c8dff;
+  --primary-dark: #2f6fe0;
+  --primary-tint: #16233d;
+  --ink: #e8ecf5;
+  --ink-soft: #a3adc2;
+  --hairline: #2a3450;
+  --canvas: #0f1526;
+  --surface: #171f36;
+  --surface-2: #1d2740;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,.5);
+}
+
+*{ box-sizing: border-box; }
+[hidden]{ display: none !important; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  transition: background .25s ease, color .25s ease;
+}
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+.topbar{
+  height: var(--topbar-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 22px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  position: sticky; top:0; z-index: 30;
+}
+.brand{ display:flex; align-items:center; gap:12px; }
+.brand-mark{
+  width:36px; height:36px; border-radius: 10px;
+  background: linear-gradient(150deg, var(--primary), var(--primary-dark));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-family: var(--font-serif); font-weight:700; font-size:19px;
+  box-shadow: var(--shadow-sm);
+}
+.brand-text{ display:flex; flex-direction:column; line-height:1.15; }
+.brand-title{ font-weight:700; font-size:15.5px; letter-spacing:.2px; }
+.brand-sub{ font-size:11.5px; color: var(--ink-soft); }
+
+.topbar-actions{ display:flex; gap:8px; }
+.icon-btn{
+  width:38px; height:38px; border-radius:10px; border:1px solid var(--hairline);
+  background: var(--surface-2); color: var(--ink-soft);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition: all .15s ease;
+}
+.icon-btn:hover{ color: var(--primary); border-color: var(--primary); }
+.icon-btn.small{ width:26px; height:26px; border-radius:7px; font-size:15px; font-weight:600; }
+.icon{ width:18px; height:18px; }
+.icon-moon{ display:none; }
+[data-theme="dark"] .icon-sun{ display:none; }
+[data-theme="dark"] .icon-moon{ display:block; }
+
+/* =========================================================
+   VIEW TABS — Cover Page / Index Page switcher
+========================================================= */
+.view-tabs{
+  display:flex; gap:8px;
+  padding: 14px 24px 0;
+  max-width: 1500px; margin: 0 auto;
+}
+.view-tab{
+  font-family: var(--font-ui); font-weight:600; font-size:13px;
+  padding: 9px 20px; border-radius: 999px;
+  border: 1.5px solid var(--hairline); background: var(--surface); color: var(--ink-soft);
+  cursor: pointer; transition: all .15s ease;
+}
+.view-tab:hover{ border-color: var(--primary); color: var(--primary); }
+.view-tab.active{ background: var(--primary); border-color: var(--primary); color:#fff; box-shadow: var(--shadow-sm); }
+.view[hidden]{ display:none; }
+
+/* =========================================================
+   HISTORY DRAWER
+========================================================= */
+.history-drawer{
+  position: fixed; top:0; right:-360px; width: 330px; height:100%;
+  background: var(--surface); border-left:1px solid var(--hairline);
+  z-index: 60; padding: 20px; transition: right .28s ease;
+  box-shadow: var(--shadow-lg);
+  display:flex; flex-direction:column; gap: 12px;
+}
+.history-drawer.open{ right:0; }
+.history-head{ display:flex; align-items:center; justify-content:space-between; }
+.history-head h3{ margin:0; font-size:16px; }
+.text-btn{
+  background:none; border:none; color: var(--primary); font-family:var(--font-ui);
+  font-weight:600; font-size:12.5px; cursor:pointer; padding:4px 6px;
+}
+.history-empty{ color: var(--ink-soft); font-size:13px; line-height:1.5; }
+.history-list{ list-style:none; margin:0; padding:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+.history-item{
+  border:1px solid var(--hairline); border-radius: var(--radius-sm); padding:10px 12px;
+  cursor:pointer; transition: border-color .15s ease, background .15s ease;
+}
+.history-item:hover{ border-color: var(--primary); background: var(--primary-tint); }
+.history-item strong{ display:block; font-size:12.5px; }
+.history-item span{ display:block; font-size:11px; color: var(--ink-soft); margin-top:2px; }
+.scrim{
+  position: fixed; inset:0; background: rgba(10,16,30,.35); z-index: 50;
+  opacity:0; pointer-events:none; transition: opacity .25s ease;
+}
+.scrim.show{ opacity:1; pointer-events:auto; }
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+.layout{
+  display:grid;
+  grid-template-columns: minmax(340px, 460px) 1fr;
+  gap: 24px;
+  padding: 24px;
+  align-items: start;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+@media (max-width: 980px){
+  .layout{ grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   FORM PANE / CARDS
+========================================================= */
+.form-pane{ display:flex; flex-direction:column; gap: 16px; }
+
+.card{
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 18px 20px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.card-title{
+  margin: 0 0 14px;
+  font-size: 13px; font-weight:700; letter-spacing:.06em; text-transform: uppercase;
+  color: var(--ink-soft);
+  display:flex; align-items:center; gap:9px;
+}
+.ct-num{
+  width:20px; height:20px; border-radius:6px; background: var(--primary-tint); color: var(--primary);
+  font-size: 11px; display:flex; align-items:center; justify-content:center; font-weight:800;
+}
+
+.field{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; flex:1; }
+.field:last-child{ margin-bottom:0; }
+.field-label{ font-size:12px; font-weight:600; color: var(--ink-soft); }
+.field-row{ display:flex; gap:12px; }
+.field-row .field{ min-width:0; }
+
+input[type="text"], input[type="date"], select{
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1.5px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  width:100%;
+}
+input:focus, select:focus{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+input.invalid{ border-color: var(--danger); }
+input.invalid:focus{ box-shadow: 0 0 0 3px rgba(214,69,69,.15); }
+
+select{ appearance:none; -webkit-appearance:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2357606f'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position: right 12px center;
+  padding-right: 30px;
+}
+
+.check-field{
+  display:flex; align-items:center; gap:9px; font-size: 13px; font-weight:500;
+  color: var(--ink); cursor:pointer; margin-bottom: 10px; user-select:none;
+}
+.check-field input{ width:16px; height:16px; accent-color: var(--primary); cursor:pointer; }
+
+.slider-field input[type="range"]{
+  accent-color: var(--primary); width:100%; cursor:pointer;
+}
+.watermark-controls{ align-items:flex-end; }
+
+/* upload boxes */
+.upload-box{
+  border: 1.5px dashed var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  min-height: 72px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  cursor:pointer; padding:8px; transition: border-color .15s ease, background .15s ease;
+  position: relative; overflow:hidden;
+}
+.upload-box:hover{ border-color: var(--primary); background: var(--primary-tint); }
+.upload-hint{ font-size:11.5px; color: var(--ink-soft); padding: 0 6px; }
+.upload-thumb{ max-height:56px; max-width:100%; object-fit:contain; }
+.upload-reset{
+  align-self:flex-start; margin-top:6px; padding:2px 4px; font-size:11px;
+}
+.upload-remove{
+  position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%;
+  border:none; background:rgba(20,26,40,.6); color:#fff; font-size:11px; line-height:1;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition: background .15s ease;
+}
+.upload-remove:hover{ background: var(--danger); }
+
+/* teacher search block (dept filter + search) */
+.teacher-search-block{ margin-bottom:12px; }
+.teacher-search-block .field-row{ align-items:flex-start; }
+.teacher-search-block select{ width:auto; min-width: 132px; }
+
+/* teacher combo */
+.combo{ position:relative; }
+.combo-list{
+  list-style:none; margin:6px 0 0; padding:6px;
+  position:absolute; top:100%; left:0; right:0; z-index:20;
+  background: var(--surface); border:1px solid var(--hairline); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md); max-height: 220px; overflow-y:auto;
+}
+.combo-list li{
+  padding:9px 10px; border-radius:8px; cursor:pointer; font-size:13px;
+}
+.combo-list li:hover, .combo-list li.active{ background: var(--primary-tint); }
+.combo-list li strong{ display:block; font-size:13px; }
+.combo-list li span{ display:block; font-size:11px; color: var(--ink-soft); }
+.combo-empty{ padding:10px; font-size:12.5px; color: var(--ink-soft); }
+
+.teacher-chosen{
+  margin-top:10px; padding:10px 12px; border-radius: var(--radius-sm);
+  background: var(--primary-tint); font-size:12.5px; display:flex; flex-direction:column; gap:2px;
+}
+.tc-row{ display:flex; align-items:center; justify-content:space-between; }
+.tc-row strong{ font-size:13.5px; }
+.teacher-chosen span{ color: var(--ink-soft); }
+
+/* =========================================================
+   TEMPLATE SWATCH PICKER
+========================================================= */
+.tpl-help{ font-size:12.5px; color: var(--ink-soft); line-height:1.5; margin: 0 0 14px; }
+.tpl-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+.tpl-swatch{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  background: var(--surface-2); border: 1.5px solid var(--hairline); border-radius: var(--radius-sm);
+  padding: 10px 8px 9px; cursor:pointer; transition: border-color .15s ease, transform .1s ease, box-shadow .15s ease;
+}
+.tpl-swatch:hover{ border-color: var(--primary); transform: translateY(-1px); }
+.tpl-swatch.active{ border-color: var(--primary); background: var(--primary-tint); box-shadow: 0 0 0 1px var(--primary) inset; }
+.tpl-swatch:active{ transform: scale(.97); }
+.tpl-name{ font-size:11.5px; font-weight:600; color: var(--ink); }
+
+/* miniature A4 preview inside each swatch — purely decorative shorthand of the real layout */
+.tpl-thumb{
+  width:56px; height:76px; background:#fdfdfb; border:1px solid #e4e1d6; border-radius:2px;
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  padding: 6px 5px; box-shadow: var(--shadow-sm); overflow:hidden;
+}
+.tpl-thumb .t-crest{ width:12px; height:12px; border-radius:50%; background: var(--primary); opacity:.85; margin-bottom:4px; flex-shrink:0; }
+.tpl-thumb .t-crest-sm{ width:8px; height:8px; }
+.tpl-thumb .t-crest-badge{ margin-top:-8px; border:2px solid #fdfdfb; }
+.tpl-thumb .t-line{ height:3px; background:#b9bfce; border-radius:1px; margin-bottom:3px; }
+.tpl-thumb .t-line-wide{ width:80%; }
+.tpl-thumb .t-line-mid{ width:58%; }
+.tpl-thumb .t-line-sm{ width:38%; }
+.tpl-thumb .t-left{ align-self:flex-start; }
+.tpl-thumb .t-spaced{ letter-spacing: 1px; }
+.tpl-thumb .t-rule{ width:16px; height:2px; background: var(--primary); margin: 2px 0 5px; border-radius:1px; }
+.tpl-thumb .t-block{ width:70%; height:14px; border:1px solid #d8dce6; border-radius:2px; margin: 3px 0 5px; }
+.tpl-thumb .t-cols{ display:flex; gap:4px; width:80%; margin-top:auto; }
+.tpl-thumb .t-cols span{ flex:1; height:8px; background:#eceffa; border-radius:1px; }
+/* minimal: left-aligned spine + hero title */
+.tpl-thumb[data-tpl-thumb="minimal"]{ align-items:stretch; }
+.tpl-thumb .t-spine{ position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--primary); }
+.tpl-thumb .t-eyebrow{ width:26px; height:4px; background: var(--primary-tint); border:1px solid var(--primary); border-radius:6px; margin: 0 0 6px 4px; }
+.tpl-thumb .t-hero{ width:70%; height:10px; background:#171c26; opacity:.75; border-radius:1px; margin: 6px auto 8px; }
+/* ribbon: colour band across the top */
+.tpl-thumb[data-tpl-thumb="ribbon"]{ padding-top:0; }
+.tpl-thumb .t-ribbon{ width:100%; height:16px; background: var(--primary); margin: 0 0 2px; flex-shrink:0; }
+/* compact: two-column header row + table block */
+.tpl-thumb[data-tpl-thumb="compact"]{ align-items:stretch; justify-content:flex-start; }
+.tpl-thumb .t-header-row{ display:flex; align-items:center; gap:4px; margin-bottom:6px; }
+.tpl-thumb .t-header-row .t-crest{ margin:0; }
+.tpl-thumb .t-line-group{ flex:1; }
+.tpl-thumb .t-line-group .t-line{ margin-bottom:2px; }
+.tpl-thumb .t-table{ flex:1; width:100%; border:1px solid #d8dce6; border-radius:2px;
+  background: repeating-linear-gradient(#fdfdfb 0 6px, #eceffa 6px 7px); }
+
+/* =========================================================
+   STYLE / CUSTOMIZATION PANEL
+========================================================= */
+.style-group{ margin-bottom: 16px; }
+.style-group:last-child{ margin-bottom:0; }
+.style-group-label{
+  display:block; font-size:11.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  color: var(--ink-soft); margin-bottom:8px;
+}
+
+/* accent colour dots + custom picker */
+.accent-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+.accent-dot{
+  width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); padding:0; transition: transform .1s ease, border-color .15s ease;
+}
+.accent-dot:hover{ transform: scale(1.1); }
+.accent-dot.active{ border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.accent-custom-wrap{
+  width:26px; height:26px; border-radius:50%; overflow:hidden; position:relative; cursor:pointer;
+  border:2px solid var(--hairline); background: conic-gradient(red,yellow,lime,cyan,blue,magenta,red);
+  flex-shrink:0; transition: border-color .15s ease;
+}
+.accent-custom-wrap.active{ border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.accent-custom-wrap input[type="color"]{
+  position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px); border:none; cursor:pointer; opacity:0;
+}
+
+/* chip option groups (font / title case / logo shape / border / divider / density) */
+.chip-row{ display:flex; flex-wrap:wrap; gap:7px; }
+.chip{
+  font-family: var(--font-ui); font-size:12px; font-weight:600; color: var(--ink);
+  background: var(--surface-2); border:1.5px solid var(--hairline); border-radius:20px;
+  padding:6px 13px; cursor:pointer; transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.chip:hover{ border-color: var(--primary); }
+.chip.active{ background: var(--primary); border-color: var(--primary); color:#fff; }
+.style-reset{ margin-top: 4px; }
+
+/* actions */
+.actions-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+.btn{
+  font-family: var(--font-ui); font-weight:600; font-size:13px;
+  border-radius: var(--radius-sm); padding: 11px 14px; cursor:pointer;
+  border: 1.5px solid transparent; transition: transform .1s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn:active{ transform: scale(.98); }
+.btn-primary{ background: var(--primary); color:#fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover{ background: var(--primary-dark); }
+.btn-outline{ background: var(--surface); border-color: var(--hairline); color: var(--ink); }
+.btn-outline:hover{ border-color: var(--primary); color: var(--primary); }
+.btn-ghost{ grid-column: 1 / -1; background:none; border:none; color: var(--ink-soft); }
+.btn-ghost:hover{ color: var(--danger); }
+.status-line{ min-height: 16px; font-size:12px; color: var(--primary); margin: 10px 0 0; }
+
+/* =========================================================
+   PREVIEW PANE
+========================================================= */
+.preview-pane{
+  position: sticky; top: calc(var(--topbar-h) + 24px);
+  display:flex; flex-direction:column; gap:12px;
+  max-height: calc(100vh - var(--topbar-h) - 48px);
+}
+.preview-toolbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 4px;
+}
+.preview-toolbar-label{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color: var(--ink-soft); }
+.zoom-controls{ display:flex; align-items:center; gap:8px; font-size:12px; color: var(--ink-soft); }
+
+.preview-scroll{
+  overflow:auto; border-radius: var(--radius);
+  background: var(--surface-2); border:1px solid var(--hairline);
+  flex:1; display:flex; justify-content:center; padding: 34px 20px;
+}
+.page-shadow-wrap{ transform-origin: top center; transition: transform .15s ease; }
+
+/* =========================================================
+   COVER PAGE (A4)
+========================================================= */
+.cover-page{
+  width: 210mm; height: 297mm;
+  background: #fdfdfb;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow:hidden;
+  font-family: var(--font-cover);
+  color: #171c26;
+  border: 1px solid #e4e1d6;
+}
+.cover-inner{
+  position:relative; z-index:2;
+  height:100%;
+  padding: 15mm 18mm 14mm;
+  display:flex; flex-direction:column;
+}
+
+.cover-watermark{
+  position:absolute; inset:0; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+  background-repeat:no-repeat; background-position:center; background-size: 62%;
+  opacity: .2; filter: grayscale(15%);
+}
+
+.cover-header{ text-align:center; }
+.cover-logo{ height: 104px; margin: 0 auto 12px; display:block; object-fit:contain; }
+.cover-logo-placeholder{
+  height: 104px; width:104px; margin: 0 auto 12px; border-radius:50%;
+  border: 2px dashed #c9cddb; display:flex; align-items:center; justify-content:center;
+}
+.cover-logo-placeholder::after{
+  content:"crest"; font-size:10px; color:#9aa0b4; font-family: var(--font-ui); letter-spacing:.05em;
+}
+.cover-institution{
+  font-family: var(--font-cover); font-weight:700; font-size: 31px;
+  letter-spacing:.01em; margin: 0 0 8px; color:#0f1522;
+}
+.cover-department{
+  font-family: var(--font-cover); font-weight:700; font-size: 16.5px; letter-spacing:.02em; color:#2b3242;
+  margin: 0 0 4mm;
+}
+
+.cover-doctype{ text-align:center; margin: 3mm 0 5mm; }
+.cover-doctype h1{
+  font-family: var(--font-cover); font-weight:700; font-size: 40px;
+  letter-spacing:.07em; margin:0; color: var(--cover-accent-dark);
+}
+.cover-doctype-rule{
+  width:74px; height:3px; background: var(--cover-accent); margin: 10px auto 0; border-radius: 2px;
+}
+
+/* Course/serial/title block: sits in the flexible middle zone of the page and is
+   vertically centred there (rather than clinging to the header), with the
+   student/teacher columns and signature footer pinned near the bottom. This is
+   what closes the big empty gap that used to sit in the middle of the sheet. */
+.cover-middle{
+  flex: 1; min-height:0;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.cover-course{ text-align:center; }
+.cover-course-row{ margin: 0 0 7mm; }
+.cover-course-row:last-child{ margin-bottom:0; }
+.cover-course-label{
+  display:block; font-family: var(--font-cover); font-weight:600; font-size: 14.5px;
+  letter-spacing:.06em; text-transform:uppercase; color:#5a6272; margin-bottom:3px;
+}
+.cover-course-value{
+  display:block; font-family: var(--font-cover); font-weight:700; font-size: 20px; color:#171c26;
+}
+.cover-course-title{ font-style: italic; }
+
+.cover-columns{
+  display:flex; align-items:flex-start; gap: 24px;
+  margin: 0 0 9mm;
+  font-size: 15px;
+}
+.cover-col{ flex:1; line-height: 2.1; }
+.cover-col-head{
+  font-family: var(--font-cover); font-weight:700; color: var(--cover-accent-dark); font-size: 14.5px;
+  text-transform:uppercase; letter-spacing:.05em; margin: 0 0 5px;
+}
+.cover-col span{ color:#5a6272; display:inline-block; min-width: 92px; }
+.cover-divider{ width:1px; align-self:stretch; background: #d8dce6; }
+
+.cover-footer{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  padding-top: 7mm;
+}
+.cover-footer-block{ text-align:center; width: 46%; }
+.cover-line{
+  border-bottom: 1px solid #40485a;
+  height: 24px; margin-bottom: 6px;
+  font-size: 14px; font-weight:600;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:2px;
+}
+.cover-footer-label{ font-size:12.5px; color:#5a6272; margin:0; letter-spacing:.02em; }
+
+/* =========================================================
+   COVER TEMPLATES — same bound data, five different layouts.
+   Each variant re-flows the existing #pXxx elements with CSS only.
+========================================================= */
+
+/* ---------- MINIMAL: left-aligned, spine rule, big hero title ---------- */
+.cover-page[data-template="minimal"]{ border-color:#e2e2e2; }
+.cover-page[data-template="minimal"] .cover-inner{ padding: 17mm 20mm 15mm 24mm; position:relative; }
+.cover-page[data-template="minimal"] .cover-inner::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--cover-accent);
+}
+.cover-page[data-template="minimal"] .cover-header{ text-align:left; display:flex; align-items:center; gap:14px; }
+.cover-page[data-template="minimal"] .cover-logo,
+.cover-page[data-template="minimal"] .cover-logo-placeholder{ height:56px; width:56px; margin:0; }
+.cover-page[data-template="minimal"] .cover-institution{ font-size:20px; margin:0; }
+.cover-page[data-template="minimal"] .cover-department{ font-size:12.5px; font-family: var(--font-ui); font-weight:600; color: var(--ink-soft); margin:2px 0 0; text-transform:uppercase; letter-spacing:.05em; }
+.cover-page[data-template="minimal"] .cover-doctype{ text-align:left; margin: 10mm 0 0; }
+.cover-page[data-template="minimal"] .cover-doctype h1{
+  display:inline-block; font-family: var(--font-ui); font-size:12px; font-weight:700; letter-spacing:.16em;
+  color: var(--cover-accent-dark); background: var(--cover-accent-tint); padding: 5px 12px; border-radius: 20px;
+}
+.cover-page[data-template="minimal"] .cover-doctype-rule{ display:none; }
+.cover-page[data-template="minimal"] .cover-middle{ align-items:flex-start; }
+.cover-page[data-template="minimal"] .cover-course{ text-align:left; width:100%; }
+.cover-page[data-template="minimal"] .cover-course-row:last-child .cover-course-value{
+  font-family: var(--font-cover); font-size: 34px; font-weight:700; line-height:1.15;
+}
+.cover-page[data-template="minimal"] .cover-course-label{ font-family: var(--font-ui); font-size:11px; }
+.cover-page[data-template="minimal"] .cover-columns{ border-top:1px solid var(--hairline); padding-top:7mm; }
+.cover-page[data-template="minimal"] .cover-col{ text-align:left; }
+.cover-page[data-template="minimal"] .cover-col-head{ font-family: var(--font-ui); }
+
+/* ---------- RIBBON: full-width colour band header ---------- */
+.cover-page[data-template="ribbon"] .cover-inner{ padding: 0 18mm 14mm; }
+.cover-page[data-template="ribbon"] .cover-header{
+  background: var(--cover-accent); margin: 0 -18mm 14mm; padding: 12mm 18mm 30px;
+  border-radius: 0 0 18px 18px; position:relative;
+}
+.cover-page[data-template="ribbon"] .cover-institution{ color:#fff; }
+.cover-page[data-template="ribbon"] .cover-department{ color: rgba(255,255,255,.85); }
+.cover-page[data-template="ribbon"] .cover-logo,
+.cover-page[data-template="ribbon"] .cover-logo-placeholder{
+  height:76px; width:76px; background:#fff; border-radius:50%; padding:6px; box-shadow: var(--shadow-md);
+  margin: 0 auto 14px;
+}
+.cover-page[data-template="ribbon"] .cover-logo-placeholder::after{ color:#9aa0b4; }
+.cover-page[data-template="ribbon"] .cover-doctype{ margin-top: 14px; }
+.cover-page[data-template="ribbon"] .cover-doctype h1{ color: var(--cover-accent-dark); font-size:34px; }
+.cover-page[data-template="ribbon"] .cover-course-row{ margin-bottom:6mm; }
+.cover-page[data-template="ribbon"] .cover-course-value{ color: var(--cover-accent-dark); }
+
+/* ---------- GAZETTE: double-frame border, ornamental corners, formal caps ---------- */
+.cover-page[data-template="frame"]{ border: none; padding: 6mm; }
+.cover-page[data-template="frame"] .cover-inner{
+  border: 1.5px solid #171c26; outline: 1px solid #171c26; outline-offset: 5px;
+  padding: 16mm 20mm 14mm; position:relative;
+}
+.cover-page[data-template="frame"] .cover-inner::before,
+.cover-page[data-template="frame"] .cover-inner::after{
+  content:""; position:absolute; width:14px; height:14px; border: 2px solid var(--cover-accent-dark);
+}
+.cover-page[data-template="frame"] .cover-inner::before{ top:-9px; left:-9px; border-right:none; border-bottom:none; }
+.cover-page[data-template="frame"] .cover-inner::after{ bottom:-9px; right:-9px; border-left:none; border-top:none; }
+.cover-page[data-template="frame"] .cover-institution{ letter-spacing:.08em; }
+.cover-page[data-template="frame"] .cover-department{ letter-spacing:.1em; text-transform:uppercase; font-size:14px; }
+.cover-page[data-template="frame"] .cover-doctype h1{ letter-spacing:.22em; font-size:32px; }
+.cover-page[data-template="frame"] .cover-doctype-rule{ background:#171c26; width:110px; height:1.5px; }
+.cover-page[data-template="frame"] .cover-course-label{ letter-spacing:.12em; }
+.cover-page[data-template="frame"] .cover-col-head{ letter-spacing:.12em; color:#171c26; }
+.cover-page[data-template="frame"] .cover-footer{ border-top: 1px solid #171c26; padding-top:8mm; margin-top:4mm; }
+
+/* ---------- COMPACT: dense two-column header, boxed info grid ---------- */
+.cover-page[data-template="compact"] .cover-inner{ padding: 14mm 16mm 12mm; }
+.cover-page[data-template="compact"] .cover-header{
+  display:flex; align-items:center; gap:12px; text-align:left;
+  border-bottom: 2px solid var(--cover-accent); padding-bottom: 8px;
+}
+.cover-page[data-template="compact"] .cover-logo,
+.cover-page[data-template="compact"] .cover-logo-placeholder{ height:46px; width:46px; margin:0; flex-shrink:0; }
+.cover-page[data-template="compact"] .cover-institution{ font-size:16px; margin:0; }
+.cover-page[data-template="compact"] .cover-department{ font-size:11.5px; margin:0; }
+.cover-page[data-template="compact"] .cover-doctype{ margin: 6mm 0 4mm; text-align:left; }
+.cover-page[data-template="compact"] .cover-doctype h1{ font-size:22px; letter-spacing:.03em; }
+.cover-page[data-template="compact"] .cover-doctype-rule{ margin-left:0; }
+.cover-page[data-template="compact"] .cover-middle{ flex:none; }
+.cover-page[data-template="compact"] .cover-course{
+  text-align:left; display:grid; grid-template-columns: 1fr 1fr; gap: 3mm 6mm;
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 8px 12px; background: var(--surface-2);
+}
+.cover-page[data-template="compact"] .cover-course-row{ margin:0; }
+.cover-page[data-template="compact"] .cover-course-value{ font-size:15px; }
+.cover-page[data-template="compact"] #pTitleWrap{ grid-column: 1 / -1; }
+.cover-page[data-template="compact"] .cover-columns{
+  margin-top: 6mm; font-size:13px; border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  padding: 10px 14px; background: var(--surface-2);
+}
+.cover-page[data-template="compact"] .cover-col{ line-height:1.8; }
+
+/* =========================================================
+   CUSTOMIZATION LAYER — font pairing, title case, logo shape,
+   border/frame, dividers, spacing density. Each is an attribute on
+   #coverPage and layers on top of whichever template is active.
+========================================================= */
+
+/* ---- Font pairing: redefines --font-cover locally, every cover
+   element already reads var(--font-cover), so this alone re-fonts
+   the whole sheet with no other selector changes needed. ---- */
+.cover-page[data-font="lora"]{ --font-cover: var(--font-serif); }
+.cover-page[data-font="sans"]{ --font-cover: var(--font-ui); }
+.cover-page[data-font="mono"]{ --font-cover: ui-monospace, 'Roboto Mono', 'Courier New', monospace; }
+
+/* ---- Title case ---- */
+.cover-page[data-titlecase="upper"] .cover-institution,
+.cover-page[data-titlecase="upper"] .cover-department{ text-transform: uppercase; letter-spacing:.03em; }
+.cover-page[data-titlecase="smallcaps"] .cover-institution{ font-variant-caps: small-caps; }
+.cover-page[data-titlecase="smallcaps"] .cover-department{ font-variant-caps: small-caps; letter-spacing:.02em; }
+
+/* ---- Logo shape: applies to the uploaded image and its empty placeholder,
+   across every template (ribbon's white badge stays a circle so it never
+   looks like a cropped card floating on the colour band). ---- */
+.cover-page[data-logoshape="square"] .cover-logo,
+.cover-page[data-logoshape="square"] .cover-logo-placeholder{ border-radius:0; }
+.cover-page[data-logoshape="rounded"] .cover-logo,
+.cover-page[data-logoshape="rounded"] .cover-logo-placeholder{ border-radius:14px; }
+.cover-page[data-logoshape="circle"] .cover-logo,
+.cover-page[data-logoshape="circle"] .cover-logo-placeholder{ border-radius:50%; }
+.cover-page[data-template="ribbon"][data-logoshape="square"] .cover-logo,
+.cover-page[data-template="ribbon"][data-logoshape="square"] .cover-logo-placeholder{ border-radius:10px; }
+
+/* ---- Border / frame accent: an optional extra frame, independent of the
+   Gazette template (which already has its own fixed frame, so this layer
+   is skipped there via :not()). ---- */
+.cover-page:not([data-template="frame"])[data-border="single"] .cover-inner{
+  border: 1px solid var(--cover-accent-dark);
+}
+.cover-page:not([data-template="frame"])[data-border="double"] .cover-inner{
+  border: 3px double var(--cover-accent-dark);
+}
+.cover-page:not([data-template="frame"])[data-border="corners"] .cover-inner::before,
+.cover-page:not([data-template="frame"])[data-border="corners"] .cover-inner::after{
+  content:""; position:absolute; width:14px; height:14px; border: 2px solid var(--cover-accent-dark); z-index:3;
+}
+.cover-page:not([data-template="frame"])[data-border="corners"] .cover-inner::before{ top:8px; left:8px; border-right:none; border-bottom:none; }
+.cover-page:not([data-template="frame"])[data-border="corners"] .cover-inner::after{ bottom:8px; right:8px; border-left:none; border-top:none; }
+/* minimal already draws its own ::before spine line — corners mode swaps to a
+   thin top rule instead of clashing with it */
+.cover-page[data-template="minimal"][data-border="corners"] .cover-inner::before{ display:none; }
+.cover-page[data-template="minimal"][data-border="single"] .cover-inner,
+.cover-page[data-template="minimal"][data-border="double"] .cover-inner{ border-left: none; }
+
+/* ---- Divider style: the vertical rule between Submitted By / To, the
+   doctype underline, and the signature lines all switch together. ---- */
+.cover-page[data-divider="none"] .cover-divider{ background: none; }
+.cover-page[data-divider="none"] .cover-doctype-rule{ background: none; }
+.cover-page[data-divider="none"] .cover-line{ border-bottom: none; }
+
+.cover-page[data-divider="dashed"] .cover-divider{ background: none; border-left: 1.5px dashed #b9bfce; width:0; }
+.cover-page[data-divider="dashed"] .cover-doctype-rule{ background: none; border-bottom: 2px dashed var(--cover-accent); border-radius:0; }
+.cover-page[data-divider="dashed"] .cover-line{ border-bottom-style: dashed; }
+
+.cover-page[data-divider="double"] .cover-divider{ background: none; border-left: 3px double #b9bfce; width:0; }
+.cover-page[data-divider="double"] .cover-doctype-rule{ height:5px; background: none; border-top: 1.5px solid var(--cover-accent); border-bottom: 1.5px solid var(--cover-accent); }
+.cover-page[data-divider="double"] .cover-line{ border-bottom-style: double; border-bottom-width: 3px; }
+
+/* ---- Spacing density: three explicit presets rather than a fluid scale,
+   so line-wrapping stays predictable at every zoom level. ---- */
+.cover-page[data-density="compact"] .cover-inner{ padding: 11mm 16mm 10mm; }
+.cover-page[data-density="compact"] .cover-header{ }
+.cover-page[data-density="compact"] .cover-logo,
+.cover-page[data-density="compact"] .cover-logo-placeholder{ height:76px; width:76px; margin-bottom:8px; }
+.cover-page[data-density="compact"] .cover-institution{ font-size:25px; margin-bottom:5px; }
+.cover-page[data-density="compact"] .cover-doctype{ margin: 2mm 0 3mm; }
+.cover-page[data-density="compact"] .cover-doctype h1{ font-size:32px; }
+.cover-page[data-density="compact"] .cover-course-row{ margin-bottom:4mm; }
+.cover-page[data-density="compact"] .cover-columns{ margin-bottom:5mm; font-size:13.5px; }
+.cover-page[data-density="compact"] .cover-col{ line-height:1.8; }
+.cover-page[data-density="compact"] .cover-footer{ padding-top:4mm; }
+
+.cover-page[data-density="spacious"] .cover-inner{ padding: 19mm 22mm 18mm; }
+.cover-page[data-density="spacious"] .cover-logo,
+.cover-page[data-density="spacious"] .cover-logo-placeholder{ height:118px; width:118px; margin-bottom:16px; }
+.cover-page[data-density="spacious"] .cover-institution{ font-size:34px; }
+.cover-page[data-density="spacious"] .cover-doctype{ margin: 5mm 0 8mm; }
+.cover-page[data-density="spacious"] .cover-doctype h1{ font-size:44px; }
+.cover-page[data-density="spacious"] .cover-course-row{ margin-bottom:9mm; }
+.cover-page[data-density="spacious"] .cover-columns{ margin-bottom:12mm; font-size:16px; }
+.cover-page[data-density="spacious"] .cover-col{ line-height:2.4; }
+.cover-page[data-density="spacious"] .cover-footer{ padding-top:9mm; }
+
+/* =========================================================
+   INDEX PAGE (A4) — Serial / Experiment / Page table
+========================================================= */
+.idx-help{ font-size:12.5px; color: var(--ink-soft); line-height:1.55; margin: 0 0 14px; }
+
+.index-page{
+  width: 210mm; min-height: 297mm;
+  background: #fdfdfb;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  font-family: var(--font-cover);
+  color: #171c26;
+  border: 1px solid #e4e1d6;
+  padding: 15mm 18mm 14mm;
+  display:flex; flex-direction:column;
+}
+.idx-header{ text-align:center; margin-bottom: 9mm; }
+.idx-logo{ height: 82px; margin: 0 auto 10px; display:block; object-fit:contain; }
+.idx-institution{ font-family: var(--font-cover); font-weight:700; font-size: 23px; margin: 0 0 6px; color:#0f1522; }
+.idx-department{ font-family: var(--font-cover); font-weight:700; font-size: 14.5px; color:#2b3242; margin: 0 0 3px; }
+.idx-doctype{ font-size: 12px; letter-spacing:.1em; text-transform:uppercase; color:#5a6272; margin: 0 0 8px; }
+.idx-title{ font-family: var(--font-cover); font-weight:700; font-size: 27px; letter-spacing:.14em; margin:0; color: var(--cover-accent-dark); }
+.idx-title-rule{ width:64px; height:3px; background: var(--cover-accent); margin: 8px auto 0; border-radius: 2px; }
+
+.idx-table{ width:100%; border-collapse:collapse; font-size: 14.5px; }
+.idx-table th, .idx-table td{ border: 1px solid #b9bfce; padding: 10px 12px; text-align:left; vertical-align:middle; }
+.idx-table thead th{
+  background: var(--cover-accent-tint); color: var(--cover-accent-dark); font-weight:700;
+  text-transform:uppercase; font-size: 11.5px; letter-spacing:.06em;
+}
+.idx-th-serial{ width:14%; text-align:center; }
+.idx-th-page{ width:18%; text-align:center; }
+.idx-th-actions{ width:34px; border:none; background:none; }
+.idx-drag{ width:26px; text-align:center; color: var(--ink-soft); cursor:grab; user-select:none; }
+.idx-table tbody tr:nth-child(even){ background:#f5f3ec; }
+.idx-table tr.dragging{ opacity:.35; }
+.idx-serial{ text-align:center; font-weight:700; }
+.idx-page{ text-align:center; }
+.idx-actions{ text-align:center; border:none; }
+.idx-del{
+  border:none; background:none; color: var(--danger); cursor:pointer; font-size:14px;
+  line-height:1; padding:5px; border-radius:6px;
+}
+.idx-del:hover{ background: rgba(214,69,69,.12); }
+.idx-input, .idx-static{ display:block; width:100%; font-family:inherit; font-size:inherit; color:inherit; }
+.idx-input{ border:none; background:transparent; padding:2px 0; outline:none; }
+.idx-input:focus{ box-shadow: 0 0 0 2px var(--primary-tint); border-radius:4px; }
+.idx-page-input{ text-align:center; }
+.idx-empty{ text-align:center; color: var(--ink-soft); font-size:13px; margin-top:18px; }
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 640px){
+  .actions-grid{ grid-template-columns: 1fr; }
+  .field-row{ flex-direction:column; }
+  .preview-scroll{ padding: 20px 10px; }
+}
+
+/* =========================================================
+   PRINT
+========================================================= */
+/* #printRoot stays empty/hidden during normal use. printElement() in script.js
+   clones only the requested sheet (cover or index) into it right before calling
+   window.print(). Because #printRoot is a direct child of <body> — outside the
+   zoomable/scrollable preview wrappers — it is never affected by the on-screen
+   zoom transform, which is what used to silently break "position: fixed" print
+   output. Everything else on the page is hidden for the duration of the print. */
+#printRoot{ display:none; }
+
+@media print{
+  body > *:not(#printRoot){ display:none !important; }
+  #printRoot{ display:block !important; }
+  #printRoot .cover-page,
+  #printRoot .index-page{
+    box-shadow:none; border:none; margin:0 auto;
+  }
+  .idx-table thead{ display: table-header-group; }
+  .idx-table tr{ break-inside: avoid; page-break-inside: avoid; }
+  @page{ size: A4; margin:0; }
+}

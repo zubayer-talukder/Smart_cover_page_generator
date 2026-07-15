@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cover Sheet — Academic Cover Page Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">§</span>
+    <div class="brand-text">
+      <span class="brand-title">Cover Sheet</span>
+      <span class="brand-sub">Academic Cover Page Generator</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="themeToggle" title="Toggle dark / light mode" aria-label="Toggle theme">
+      <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="icon-btn" id="historyToggle" title="Recent history" aria-label="Recent history">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v5l3 2"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ============ VIEW TABS: Cover Page / Index Page ============ -->
+<nav class="view-tabs" aria-label="Document section">
+  <button class="view-tab active" id="tabCover" data-view="cover" type="button">Cover Page</button>
+  <button class="view-tab" id="tabIndex" data-view="index" type="button">Index Page</button>
+</nav>
+
+<!-- ============ HISTORY DRAWER ============ -->
+<aside class="history-drawer" id="historyDrawer">
+  <div class="history-head">
+    <h3>Recent covers</h3>
+    <button class="text-btn" id="closeHistory">Close</button>
+  </div>
+  <p class="history-empty" id="historyEmpty">Nothing saved yet. Generate a cover and it'll turn up here.</p>
+  <ul class="history-list" id="historyList"></ul>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<!-- ============ COVER PAGE VIEW ============ -->
+<main class="view layout" id="viewCover">
+
+  <!-- ---------- LEFT: FORM ---------- -->
+  <section class="form-pane" aria-label="Cover page details">
+
+    <!-- Template -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">T</span>Template</h2>
+      <p class="tpl-help">Pick a layout — everything you type carries over instantly.</p>
+      <div class="tpl-grid" id="templateGrid">
+        <button type="button" class="tpl-swatch active" data-tpl="classic" aria-pressed="true">
+          <span class="tpl-thumb" data-tpl-thumb="classic">
+            <span class="t-crest"></span>
+            <span class="t-line t-line-wide"></span>
+            <span class="t-line t-line-mid"></span>
+            <span class="t-rule"></span>
+            <span class="t-block"></span>
+            <span class="t-cols"><span></span><span></span></span>
+          </span>
+          <span class="tpl-name">Classic</span>
+        </button>
+        <button type="button" class="tpl-swatch" data-tpl="minimal" aria-pressed="false">
+          <span class="tpl-thumb" data-tpl-thumb="minimal">
+            <span class="t-spine"></span>
+            <span class="t-eyebrow"></span>
+            <span class="t-line t-line-wide t-left"></span>
+            <span class="t-line t-line-mid t-left"></span>
+            <span class="t-hero"></span>
+            <span class="t-cols"><span></span><span></span></span>
+          </span>
+          <span class="tpl-name">Minimal</span>
+        </button>
+        <button type="button" class="tpl-swatch" data-tpl="ribbon" aria-pressed="false">
+          <span class="tpl-thumb" data-tpl-thumb="ribbon">
+            <span class="t-ribbon"></span>
+            <span class="t-crest t-crest-badge"></span>
+            <span class="t-line t-line-mid"></span>
+            <span class="t-block"></span>
+            <span class="t-cols"><span></span><span></span></span>
+          </span>
+          <span class="tpl-name">Ribbon</span>
+        </button>
+        <button type="button" class="tpl-swatch" data-tpl="frame" aria-pressed="false">
+          <span class="tpl-thumb" data-tpl-thumb="frame">
+            <span class="t-crest"></span>
+            <span class="t-line t-line-wide t-spaced"></span>
+            <span class="t-line t-line-mid t-spaced"></span>
+            <span class="t-rule"></span>
+            <span class="t-block"></span>
+          </span>
+          <span class="tpl-name">Gazette</span>
+        </button>
+        <button type="button" class="tpl-swatch" data-tpl="compact" aria-pressed="false">
+          <span class="tpl-thumb" data-tpl-thumb="compact">
+            <span class="t-header-row"><span class="t-crest t-crest-sm"></span><span class="t-line-group"><span class="t-line t-line-mid t-left"></span><span class="t-line t-line-sm t-left"></span></span></span>
+            <span class="t-table"></span>
+          </span>
+          <span class="tpl-name">Compact</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Style / Customization -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">S</span>Style</h2>
+
+      <div class="style-group">
+        <span class="style-group-label">Accent colour</span>
+        <div class="accent-row" id="accentRow" data-group="accent">
+          <button type="button" class="accent-dot active" data-value="#0B5ED7" style="background:#0B5ED7" title="Blue (default)" aria-label="Blue"></button>
+          <button type="button" class="accent-dot" data-value="#8E1F2F" style="background:#8E1F2F" title="Maroon" aria-label="Maroon"></button>
+          <button type="button" class="accent-dot" data-value="#1F6B3B" style="background:#1F6B3B" title="Forest green" aria-label="Forest green"></button>
+          <button type="button" class="accent-dot" data-value="#0F2A4A" style="background:#0F2A4A" title="Navy" aria-label="Navy"></button>
+          <button type="button" class="accent-dot" data-value="#2B2E33" style="background:#2B2E33" title="Charcoal" aria-label="Charcoal"></button>
+          <button type="button" class="accent-dot" data-value="#B8791A" style="background:#B8791A" title="Amber" aria-label="Amber"></button>
+          <button type="button" class="accent-dot" data-value="#5B2A86" style="background:#5B2A86" title="Purple" aria-label="Purple"></button>
+          <label class="accent-custom-wrap" id="accentCustomWrap" title="Custom colour">
+            <input type="color" id="accentCustom" value="#0B5ED7">
+          </label>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Font pairing</span>
+        <div class="chip-row" data-group="font">
+          <button type="button" class="chip active" data-value="serif">Classic Serif</button>
+          <button type="button" class="chip" data-value="lora">Literary</button>
+          <button type="button" class="chip" data-value="sans">Modern Sans</button>
+          <button type="button" class="chip" data-value="mono">Technical Mono</button>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Title case</span>
+        <div class="chip-row" data-group="titlecase">
+          <button type="button" class="chip active" data-value="normal">Normal</button>
+          <button type="button" class="chip" data-value="upper">UPPERCASE</button>
+          <button type="button" class="chip" data-value="smallcaps">Small Caps</button>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Logo shape</span>
+        <div class="chip-row" data-group="logoshape">
+          <button type="button" class="chip active" data-value="circle">Circle</button>
+          <button type="button" class="chip" data-value="rounded">Rounded</button>
+          <button type="button" class="chip" data-value="square">Square</button>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Border / frame</span>
+        <div class="chip-row" data-group="border">
+          <button type="button" class="chip active" data-value="none">None</button>
+          <button type="button" class="chip" data-value="single">Single line</button>
+          <button type="button" class="chip" data-value="double">Double line</button>
+          <button type="button" class="chip" data-value="corners">Corner marks</button>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Divider style</span>
+        <div class="chip-row" data-group="divider">
+          <button type="button" class="chip active" data-value="solid">Solid</button>
+          <button type="button" class="chip" data-value="dashed">Dashed</button>
+          <button type="button" class="chip" data-value="double">Double</button>
+          <button type="button" class="chip" data-value="none">None</button>
+        </div>
+      </div>
+
+      <div class="style-group">
+        <span class="style-group-label">Spacing density</span>
+        <div class="chip-row" data-group="density">
+          <button type="button" class="chip" data-value="compact">Compact</button>
+          <button type="button" class="chip active" data-value="comfortable">Comfortable</button>
+          <button type="button" class="chip" data-value="spacious">Spacious</button>
+        </div>
+      </div>
+
+      <button type="button" class="text-btn style-reset" id="styleReset">Reset style to defaults</button>
+    </div>
+
+    <!-- Institution -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">A</span>Institution</h2>
+
+      <label class="field">
+        <span class="field-label">Institution name</span>
+        <input type="text" id="institutionName" value="Mymensingh Engineering College" required>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Institution logo</span>
+          <div class="upload-box" id="logoUploadBox">
+            <input type="file" id="logoUpload" accept="image/*" hidden>
+            <img id="logoPreviewImg" class="upload-thumb" alt="" hidden>
+            <button type="button" class="upload-remove no-print" id="logoRemoveBtn" title="Remove uploaded logo" hidden>✕</button>
+            <span class="upload-hint" id="logoUploadHint">Click to upload logo</span>
+          </div>
+          <button type="button" class="text-btn upload-reset" id="logoResetDefault">Use MEC default logo</button>
+        </label>
+        <label class="field">
+          <span class="field-label">Watermark logo</span>
+          <div class="upload-box" id="watermarkUploadBox">
+            <input type="file" id="watermarkUpload" accept="image/*" hidden>
+            <img id="watermarkPreviewImg" class="upload-thumb" alt="" hidden>
+            <button type="button" class="upload-remove no-print" id="watermarkRemoveBtn" title="Remove uploaded watermark" hidden>✕</button>
+            <span class="upload-hint" id="watermarkUploadHint">Click to upload watermark</span>
+          </div>
+          <button type="button" class="text-btn upload-reset" id="watermarkResetDefault">Use MEC default logo</button>
+        </label>
+      </div>
+
+      <div class="field-row watermark-controls">
+        <label class="check-field">
+          <input type="checkbox" id="watermarkEnabled" checked>
+          <span>Enable watermark</span>
+        </label>
+        <label class="field slider-field">
+          <span class="field-label">Opacity — <span id="opacityValue">20%</span></span>
+          <input type="range" id="watermarkOpacity" min="5" max="50" step="5" value="20">
+        </label>
+      </div>
+    </div>
+
+    <!-- Department & document type -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">B</span>Programme</h2>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Department</span>
+          <select id="department">
+            <option value="Computer Science &amp; Engineering (CSE)" selected>Computer Science &amp; Engineering (CSE)</option>
+            <option value="Electrical &amp; Electronic Engineering (EEE)">Electrical &amp; Electronic Engineering (EEE)</option>
+            <option value="Civil Engineering (CE)">Civil Engineering (CE)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Document type</span>
+          <select id="documentType">
+            <option value="Lab Report" selected>Lab Report</option>
+            <option value="Assignment">Assignment</option>
+            <option value="Project">Project</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <!-- Course info -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">C</span>Course</h2>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Course code</span>
+          <input type="text" id="courseCode" placeholder="CSE-3201" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Course name</span>
+          <input type="text" id="courseName" placeholder="Data Structures" required>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Serial / experiment no.</span>
+          <input type="text" id="serialNo" placeholder="01">
+        </label>
+        <label class="field">
+          <span class="field-label">Date of submission</span>
+          <input type="date" id="submissionDate">
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Title</span>
+        <input type="text" id="reportTitle" placeholder="Lab Report on Linked List Implementation">
+      </label>
+    </div>
+
+    <!-- Student info -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">D</span>Submitted by</h2>
+
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input type="text" id="studentName" placeholder="Your full name" required>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Roll</span>
+          <input type="text" id="studentRoll" placeholder="2019-15-01">
+        </label>
+        <label class="field">
+          <span class="field-label">Registration no.</span>
+          <input type="text" id="studentReg" placeholder="1801xxxxxx">
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Exam roll</span>
+          <input type="text" id="studentExamRoll" placeholder="30215">
+        </label>
+        <label class="field">
+          <span class="field-label">Batch</span>
+          <input type="text" id="studentBatch" placeholder="2019">
+        </label>
+      </div>
+    </div>
+
+    <!-- Teacher info -->
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">E</span>Submitted to</h2>
+
+      <label class="check-field">
+        <input type="checkbox" id="manualTeacherEntry">
+        <span>Enter teacher details manually</span>
+      </label>
+
+      <div id="teacherSearchWrap" class="teacher-search-block">
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Department</span>
+            <select id="teacherDeptFilter">
+              <option value="">All departments</option>
+              <option value="Administration">Administration</option>
+              <option value="Department of Electrical and Electronic Engineering">Electrical &amp; Electronic Engineering</option>
+              <option value="Department of Civil Engineering">Civil Engineering</option>
+              <option value="Department of Computer Science and Engineering">Computer Science &amp; Engineering</option>
+              <option value="Non-Tech Department">Non-Tech Department</option>
+            </select>
+          </label>
+          <label class="field combo">
+            <span class="field-label">Search teacher</span>
+            <input type="text" id="teacherSearch" placeholder="Type a name, e.g. “abd”" autocomplete="off">
+            <ul class="combo-list" id="teacherResults" hidden></ul>
+          </label>
+        </div>
+      </div>
+
+      <div id="teacherManualWrap" hidden>
+        <label class="field">
+          <span class="field-label">Teacher name</span>
+          <input type="text" id="teacherNameManual" placeholder="Dr. Jane Doe">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Designation</span>
+            <input type="text" id="teacherDesigManual" placeholder="Associate Professor">
+          </label>
+          <label class="field">
+            <span class="field-label">Department</span>
+            <input type="text" id="teacherDeptManual" placeholder="Department of CSE">
+          </label>
+        </div>
+      </div>
+
+      <div class="teacher-chosen" id="teacherChosen" hidden>
+        <div class="tc-row">
+          <strong id="tcName"></strong>
+          <button class="text-btn" id="teacherClear">Change</button>
+        </div>
+        <span id="tcDesig"></span>
+        <span id="tcDept"></span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card actions-card">
+      <h2 class="card-title"><span class="ct-num">F</span>Actions</h2>
+      <div class="actions-grid">
+        <button class="btn btn-primary" id="btnPrint">Print cover</button>
+        <button class="btn btn-primary" id="btnPdf">Download PDF</button>
+        <button class="btn btn-outline" id="btnSave">Save data</button>
+        <button class="btn btn-outline" id="btnLoad">Load saved</button>
+        <button class="btn btn-outline" id="btnDuplicate">Duplicate</button>
+        <button class="btn btn-ghost" id="btnReset">Reset form</button>
+      </div>
+      <p class="status-line" id="statusLine" role="status" aria-live="polite"></p>
+    </div>
+
+  </section>
+
+  <!-- ---------- RIGHT: LIVE PREVIEW ---------- -->
+  <section class="preview-pane" aria-label="Cover page preview">
+    <div class="preview-toolbar">
+      <span class="preview-toolbar-label">Live preview</span>
+      <div class="zoom-controls">
+        <button class="icon-btn small" id="zoomOut" aria-label="Zoom out">−</button>
+        <span id="zoomLevel">100%</span>
+        <button class="icon-btn small" id="zoomIn" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+
+    <div class="preview-scroll">
+      <div class="page-shadow-wrap" id="pageShadowWrap">
+        <!-- ===== PRINTABLE COVER PAGE ===== -->
+        <div class="cover-page" id="coverPage" data-template="classic">
+          <div class="cover-watermark" id="coverWatermark"></div>
+
+          <div class="cover-inner">
+            <div class="cover-header">
+              <img class="cover-logo" id="pLogo" src="" alt="" hidden>
+              <div class="cover-logo-placeholder" id="pLogoPlaceholder"></div>
+              <p class="cover-institution" id="pInstitution">Mymensingh Engineering College</p>
+              <p class="cover-department" id="pDepartment">Department of Computer Science &amp; Engineering (CSE)</p>
+            </div>
+
+            <div class="cover-doctype">
+              <h1 id="pDocType">LAB REPORT</h1>
+              <div class="cover-doctype-rule"></div>
+            </div>
+
+            <div class="cover-middle">
+              <div class="cover-course">
+                <div class="cover-course-row">
+                  <span class="cover-course-label">Course Name</span>
+                  <b class="cover-course-value" id="pCourseName">—</b>
+                </div>
+                <div class="cover-course-row">
+                  <span class="cover-course-label">Course Code</span>
+                  <b class="cover-course-value" id="pCourseCode">—</b>
+                </div>
+                <div class="cover-course-row" id="pSerialWrap">
+                  <span class="cover-course-label" id="pSerialLabel">Serial No</span>
+                  <b class="cover-course-value" id="pSerialNo">—</b>
+                </div>
+                <div class="cover-course-row" id="pTitleWrap">
+                  <span class="cover-course-label">Title Name</span>
+                  <b class="cover-course-value cover-course-title" id="pTitle"></b>
+                </div>
+              </div>
+            </div>
+
+            <div class="cover-columns">
+              <div class="cover-col">
+                <p class="cover-col-head">Submitted By</p>
+                <p><span>Name:</span> <b id="pStudentName">—</b></p>
+                <p><span>Roll:</span> <b id="pStudentRoll">—</b></p>
+                <p><span>Reg. No:</span> <b id="pStudentReg">—</b></p>
+                <p><span>Exam Roll:</span> <b id="pStudentExamRoll">—</b></p>
+                <p><span>Batch:</span> <b id="pStudentBatch">—</b></p>
+              </div>
+              <div class="cover-divider"></div>
+              <div class="cover-col">
+                <p class="cover-col-head">Submitted To</p>
+                <p><b id="pTeacherName">—</b></p>
+                <p id="pTeacherDesig">—</p>
+                <p id="pTeacherDept">—</p>
+                <p id="pTeacherInst">Mymensingh Engineering College</p>
+              </div>
+            </div>
+
+            <div class="cover-footer">
+              <div class="cover-footer-block">
+                <div class="cover-line" id="pDate">—</div>
+                <p class="cover-footer-label">Date of Submission</p>
+              </div>
+              <div class="cover-footer-block">
+                <div class="cover-line"></div>
+                <p class="cover-footer-label">Teacher's Signature</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ===== END PRINTABLE COVER PAGE ===== -->
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ INDEX PAGE VIEW ============ -->
+<main class="view layout" id="viewIndex" hidden>
+
+  <!-- ---------- LEFT: FORM ---------- -->
+  <section class="form-pane" aria-label="Index page details">
+
+    <div class="card">
+      <h2 class="card-title"><span class="ct-num">A</span>Index Entries</h2>
+      <p class="idx-help">Build the index right on the sheet — add a row, type the experiment name, then type in the page number yourself. Drag a row by its handle to reorder it.</p>
+      <div class="actions-grid">
+        <button class="btn btn-primary" id="idxAddRow">+ Add Row</button>
+        <button class="btn btn-outline" id="idxClearAll">Clear All</button>
+      </div>
+    </div>
+
+    <div class="card actions-card">
+      <h2 class="card-title"><span class="ct-num">B</span>Actions</h2>
+      <div class="actions-grid">
+        <button class="btn btn-primary" id="idxPrint">Print Index</button>
+        <button class="btn btn-primary" id="idxDownloadPdf">Download PDF</button>
+      </div>
+      <p class="status-line" id="idxStatusLine" role="status" aria-live="polite"></p>
+    </div>
+
+  </section>
+
+  <!-- ---------- RIGHT: LIVE PREVIEW ---------- -->
+  <section class="preview-pane" aria-label="Index page preview">
+    <div class="preview-toolbar">
+      <span class="preview-toolbar-label">Live preview</span>
+      <div class="zoom-controls">
+        <button class="icon-btn small" id="idxZoomOut" aria-label="Zoom out">−</button>
+        <span id="idxZoomLevel">100%</span>
+        <button class="icon-btn small" id="idxZoomIn" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+
+    <div class="preview-scroll">
+      <div class="page-shadow-wrap" id="idxPageShadowWrap">
+        <!-- ===== PRINTABLE INDEX PAGE ===== -->
+        <div class="index-page" id="indexPage">
+          <div class="idx-header">
+            <img class="idx-logo" id="pIdxLogo" src="" alt="" hidden>
+            <p class="idx-institution" id="pIdxInstitution">Mymensingh Engineering College</p>
+            <p class="idx-department" id="pIdxDepartment">Department of Computer Science &amp; Engineering (CSE)</p>
+            <p class="idx-doctype" id="pIdxDocType">LAB REPORT</p>
+            <h1 class="idx-title">INDEX</h1>
+            <div class="idx-title-rule"></div>
+          </div>
+
+          <table class="idx-table" id="idxTable">
+            <thead>
+              <tr>
+                <th class="idx-drag no-print" aria-hidden="true"></th>
+                <th class="idx-th-serial">Serial No.</th>
+                <th>Experiment Name</th>
+                <th class="idx-th-page">Page Number</th>
+                <th class="idx-th-actions no-print" aria-hidden="true"></th>
+              </tr>
+            </thead>
+            <tbody id="idxTableBody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+          <p class="idx-empty" id="idxEmptyMsg">No entries yet — click "Add Row" to get started.</p>
+        </div>
+        <!-- ===== END PRINTABLE INDEX PAGE ===== -->
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ PRINT ROOT ============ -->
+<!-- Only ever populated momentarily by printElement(); kept outside the scaled/scrolling
+     preview wrappers so print/PDF output is never affected by the on-screen zoom level. -->
+<div id="printRoot"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
