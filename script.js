@@ -40,6 +40,7 @@ let selectedTeacher = null;   // {name, designation, department} from search
 let logoDataUrl = null;
 let watermarkDataUrl = null;
 let indexRows = [];           // [{id, name, page}] — the Index Page table's rows, in display order
+let groupMembers = [];        // [{id, name, roll}] — Group submission members, in display order
 let currentTemplate = 'classic'; // 'classic' | 'minimal' | 'ribbon' | 'frame' | 'compact'
 const DEFAULT_STYLE = { accent: '#0B5ED7', font: 'serif', titlecase: 'normal', logoshape: 'circle', border: 'none', divider: 'solid', density: 'comfortable' };
 let styleState = { ...DEFAULT_STYLE };
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   wireWatermarkControls();
   wireTemplateSwitcher();
   wireStyleControls();
+  wireGroupSubmission();
   wireActionButtons();
   wireViewTabs();
   wireIndexActions();
@@ -148,6 +150,29 @@ function updatePreview() {
   $('pStudentReg').textContent = $('studentReg').value.trim() || '—';
   $('pStudentExamRoll').textContent = $('studentExamRoll').value.trim() || '—';
   $('pStudentBatch').textContent = $('studentBatch').value.trim() || '—';
+
+  // group submission — swap the single Name/Roll/Reg/Exam-Roll/Batch block for
+  // a numbered "Name — Roll" list when the group toggle is on
+  const groupOn = $('groupSubmission').checked;
+  $('pStudentSingle').hidden = groupOn;
+  $('pStudentGroup').hidden = !groupOn;
+  if (groupOn) {
+    const listEl = $('pStudentGroupList');
+    listEl.innerHTML = '';
+    const members = groupMembers.filter(m => m.name.trim() || m.roll.trim());
+    if (members.length === 0) {
+      listEl.innerHTML = '<li><b>—</b></li>';
+    } else {
+      members.forEach(m => {
+        const li = document.createElement('li');
+        const name = m.name.trim() || '—';
+        const roll = m.roll.trim();
+        li.innerHTML = `<b>${escapeHtml(name)}</b>${roll ? `<span> — Roll: ${escapeHtml(roll)}</span>` : ''}`;
+        listEl.appendChild(li);
+      });
+    }
+    $('pStudentBatchGroup').textContent = $('studentBatchGroup').value.trim() || '—';
+  }
 
   // teacher block
   const manual = $('manualTeacherEntry').checked;
@@ -373,6 +398,84 @@ function wireStyleControls() {
 }
 
 /* =========================================================
+   GROUP SUBMISSION — lets a group project list several students'
+   Name + Roll together under "Submitted By" instead of just one.
+   Mirrors the Index Page's add/remove row pattern.
+========================================================= */
+function makeGroupRowId() {
+  return 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function wireGroupSubmission() {
+  const checkbox = $('groupSubmission');
+  checkbox.addEventListener('change', () => {
+    const on = checkbox.checked;
+    $('singleStudentWrap').hidden = on;
+    $('groupStudentWrap').hidden = !on;
+    if (on && groupMembers.length === 0) addGroupRow();
+    updatePreview();
+  });
+
+  $('groupAddRow').addEventListener('click', () => addGroupRow());
+  $('studentBatchGroup').addEventListener('input', updatePreview);
+
+  renderGroupList();
+}
+
+function addGroupRow(prefill) {
+  groupMembers.push({ id: makeGroupRowId(), name: (prefill && prefill.name) || '', roll: (prefill && prefill.roll) || '' });
+  renderGroupList();
+  requestAnimationFrame(() => {
+    const inputs = document.querySelectorAll('#groupList .group-name-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+}
+
+/* Rebuilds the group member rows from `groupMembers`. Called after any
+   add / delete so the numbered preview list always matches display order. */
+function renderGroupList() {
+  const wrap = $('groupList');
+  wrap.innerHTML = '';
+  groupMembers.forEach((m) => {
+    const row = document.createElement('div');
+    row.className = 'group-row';
+    row.dataset.id = m.id;
+    row.innerHTML = `
+      <input type="text" class="group-name-input" placeholder="Student name" value="${escapeAttr(m.name)}">
+      <input type="text" class="group-roll-input" placeholder="Roll" value="${escapeAttr(m.roll)}">
+      <button type="button" class="group-del" title="Remove student">✕</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wireGroupRowEvents();
+  updatePreview();
+}
+
+function wireGroupRowEvents() {
+  const wrap = $('groupList');
+
+  wrap.querySelectorAll('.group-name-input').forEach((inp) => {
+    inp.addEventListener('input', () => {
+      const m = groupMembers.find((r) => r.id === inp.closest('.group-row').dataset.id);
+      if (m) { m.name = inp.value; updatePreview(); }
+    });
+  });
+  wrap.querySelectorAll('.group-roll-input').forEach((inp) => {
+    inp.addEventListener('input', () => {
+      const m = groupMembers.find((r) => r.id === inp.closest('.group-row').dataset.id);
+      if (m) { m.roll = inp.value; updatePreview(); }
+    });
+  });
+  wrap.querySelectorAll('.group-del').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.group-row');
+      groupMembers = groupMembers.filter((r) => r.id !== row.dataset.id);
+      renderGroupList();
+    });
+  });
+}
+
+/* =========================================================
    TEACHER SEARCH (Mode 1) + MANUAL (Mode 2)
 ========================================================= */
 function wireTeacherSearch() {
@@ -471,6 +574,9 @@ function collectFormData() {
     studentReg: $('studentReg').value,
     studentExamRoll: $('studentExamRoll').value,
     studentBatch: $('studentBatch').value,
+    groupSubmission: $('groupSubmission').checked,
+    groupMembers,
+    studentBatchGroup: $('studentBatchGroup').value,
     manualTeacherEntry: $('manualTeacherEntry').checked,
     teacherNameManual: $('teacherNameManual').value,
     teacherDesigManual: $('teacherDesigManual').value,
@@ -502,6 +608,13 @@ function applyFormData(data) {
   $('studentReg').value = data.studentReg ?? '';
   $('studentExamRoll').value = data.studentExamRoll ?? '';
   $('studentBatch').value = data.studentBatch ?? '';
+
+  $('groupSubmission').checked = !!data.groupSubmission;
+  $('singleStudentWrap').hidden = !!data.groupSubmission;
+  $('groupStudentWrap').hidden = !data.groupSubmission;
+  groupMembers = Array.isArray(data.groupMembers) ? data.groupMembers : [];
+  $('studentBatchGroup').value = data.studentBatchGroup ?? '';
+  renderGroupList();
 
   $('manualTeacherEntry').checked = !!data.manualTeacherEntry;
   $('teacherNameManual').value = data.teacherNameManual ?? '';

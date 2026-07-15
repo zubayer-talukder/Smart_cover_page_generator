@@ -6,7 +6,7 @@
 <title>Cover Sheet — Academic Cover Page Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+Bengali:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="vendor/html2pdf.bundle.min.js"></script>
 </head>
@@ -126,6 +126,12 @@
           <button type="button" class="accent-dot" data-value="#2B2E33" style="background:#2B2E33" title="Charcoal" aria-label="Charcoal"></button>
           <button type="button" class="accent-dot" data-value="#B8791A" style="background:#B8791A" title="Amber" aria-label="Amber"></button>
           <button type="button" class="accent-dot" data-value="#5B2A86" style="background:#5B2A86" title="Purple" aria-label="Purple"></button>
+          <button type="button" class="accent-dot" data-value="#0F7A6B" style="background:#0F7A6B" title="Teal" aria-label="Teal"></button>
+          <button type="button" class="accent-dot" data-value="#B23A6B" style="background:#B23A6B" title="Rose" aria-label="Rose"></button>
+          <button type="button" class="accent-dot" data-value="#3B4B6B" style="background:#3B4B6B" title="Slate blue" aria-label="Slate blue"></button>
+          <button type="button" class="accent-dot" data-value="#4338CA" style="background:#4338CA" title="Indigo" aria-label="Indigo"></button>
+          <button type="button" class="accent-dot" data-value="#B5542A" style="background:#B5542A" title="Terracotta" aria-label="Terracotta"></button>
+          <button type="button" class="accent-dot" data-value="#1B1B1B" style="background:#1B1B1B" title="Ink black" aria-label="Ink black"></button>
           <label class="accent-custom-wrap" id="accentCustomWrap" title="Custom colour">
             <input type="color" id="accentCustom" value="#0B5ED7">
           </label>
@@ -139,6 +145,7 @@
           <button type="button" class="chip" data-value="lora">Literary</button>
           <button type="button" class="chip" data-value="sans">Modern Sans</button>
           <button type="button" class="chip" data-value="mono">Technical Mono</button>
+          <button type="button" class="chip" data-value="bangla">বাংলা (Bangla)</button>
         </div>
       </div>
 
@@ -296,30 +303,47 @@
     <div class="card">
       <h2 class="card-title"><span class="ct-num">D</span>Submitted by</h2>
 
-      <label class="field">
-        <span class="field-label">Name</span>
-        <input type="text" id="studentName" placeholder="Your full name" required>
+      <label class="check-field">
+        <input type="checkbox" id="groupSubmission">
+        <span>Group submission — multiple students</span>
       </label>
 
-      <div class="field-row">
+      <div id="singleStudentWrap">
         <label class="field">
-          <span class="field-label">Roll</span>
-          <input type="text" id="studentRoll" placeholder="2019-15-01">
+          <span class="field-label">Name</span>
+          <input type="text" id="studentName" placeholder="Your full name" required>
         </label>
-        <label class="field">
-          <span class="field-label">Registration no.</span>
-          <input type="text" id="studentReg" placeholder="1801xxxxxx">
-        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Roll</span>
+            <input type="text" id="studentRoll" placeholder="2019-15-01">
+          </label>
+          <label class="field">
+            <span class="field-label">Registration no.</span>
+            <input type="text" id="studentReg" placeholder="1801xxxxxx">
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Exam roll</span>
+            <input type="text" id="studentExamRoll" placeholder="30215">
+          </label>
+          <label class="field">
+            <span class="field-label">Batch</span>
+            <input type="text" id="studentBatch" placeholder="2019">
+          </label>
+        </div>
       </div>
 
-      <div class="field-row">
-        <label class="field">
-          <span class="field-label">Exam roll</span>
-          <input type="text" id="studentExamRoll" placeholder="30215">
-        </label>
-        <label class="field">
-          <span class="field-label">Batch</span>
-          <input type="text" id="studentBatch" placeholder="2019">
+      <div id="groupStudentWrap" hidden>
+        <p class="tpl-help">Add each group member's name and roll — they'll be listed together under "Submitted By".</p>
+        <div class="group-list" id="groupList"><!-- rows injected by JS --></div>
+        <button type="button" class="btn btn-outline group-add-btn" id="groupAddRow">+ Add student</button>
+        <label class="field" style="margin-top:12px">
+          <span class="field-label">Batch (shared)</span>
+          <input type="text" id="studentBatchGroup" placeholder="2019">
         </label>
       </div>
     </div>
@@ -451,11 +475,17 @@
             <div class="cover-columns">
               <div class="cover-col">
                 <p class="cover-col-head">Submitted By</p>
-                <p><span>Name:</span> <b id="pStudentName">—</b></p>
-                <p><span>Roll:</span> <b id="pStudentRoll">—</b></p>
-                <p><span>Reg. No:</span> <b id="pStudentReg">—</b></p>
-                <p><span>Exam Roll:</span> <b id="pStudentExamRoll">—</b></p>
-                <p><span>Batch:</span> <b id="pStudentBatch">—</b></p>
+                <div id="pStudentSingle">
+                  <p><span>Name:</span> <b id="pStudentName">—</b></p>
+                  <p><span>Roll:</span> <b id="pStudentRoll">—</b></p>
+                  <p><span>Reg. No:</span> <b id="pStudentReg">—</b></p>
+                  <p><span>Exam Roll:</span> <b id="pStudentExamRoll">—</b></p>
+                  <p><span>Batch:</span> <b id="pStudentBatch">—</b></p>
+                </div>
+                <div id="pStudentGroup" hidden>
+                  <ol class="cover-group-list" id="pStudentGroupList"></ol>
+                  <p class="cover-group-batch"><span>Batch:</span> <b id="pStudentBatchGroup">—</b></p>
+                </div>
               </div>
               <div class="cover-divider"></div>
               <div class="cover-col">
