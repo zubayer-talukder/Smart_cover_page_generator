@@ -23,6 +23,7 @@
      cover & index sheets always render with a proper serif — even offline / mid-print,
      with no dependency on a webfont finishing its download before html2canvas snapshots it. */
   --font-cover: Georgia, Cambria, 'Times New Roman', 'Noto Serif', serif;
+  --font-bangla: 'Noto Serif Bengali', 'Hind Siliguri', Georgia, serif;
   --topbar-h: 62px;
 
   /* Cover/Index CONTENT accent — deliberately independent from --primary (the
@@ -228,6 +229,26 @@ select{ appearance:none; -webkit-appearance:none;
 }
 .watermark-controls{ align-items:flex-end; }
 
+/* ---- Group submission row list (editor sidebar) ---- */
+.group-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.group-row{ display:flex; gap:8px; align-items:center; }
+.group-row input{
+  font-family: var(--font-ui); font-size: 13.5px; color: var(--ink);
+  background: var(--surface-2); border: 1.5px solid var(--hairline);
+  border-radius: var(--radius-sm); padding: 9px 11px; outline:none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.group-row input:focus{ border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.group-name-input{ flex: 1.4; min-width:0; }
+.group-roll-input{ flex: 1; min-width:0; }
+.group-del{
+  flex-shrink:0; border:none; background: var(--surface-2); color: var(--danger); cursor:pointer;
+  font-size:14px; line-height:1; width:34px; height:34px; border-radius: var(--radius-sm);
+  display:flex; align-items:center; justify-content:center;
+}
+.group-del:hover{ background: rgba(214,69,69,.12); }
+.group-add-btn{ width:100%; }
+
 /* upload boxes */
 .upload-box{
   border: 1.5px dashed var(--hairline);
@@ -427,6 +448,10 @@ select{ appearance:none; -webkit-appearance:none;
   height:100%;
   padding: 15mm 18mm 14mm;
   display:flex; flex-direction:column;
+  /* Distribute header / doctype / course-info / columns / footer evenly down
+     the whole page instead of letting one flexible block (cover-middle)
+     swallow all the extra space and clump the content near true centre. */
+  justify-content: space-between;
 }
 
 .cover-watermark{
@@ -468,7 +493,7 @@ select{ appearance:none; -webkit-appearance:none;
    student/teacher columns and signature footer pinned near the bottom. This is
    what closes the big empty gap that used to sit in the middle of the sheet. */
 .cover-middle{
-  flex: 1; min-height:0;
+  flex: 0 1 auto; min-height:0;
   display:flex; flex-direction:column; justify-content:center;
 }
 .cover-course{ text-align:center; }
@@ -486,15 +511,37 @@ select{ appearance:none; -webkit-appearance:none;
 .cover-columns{
   display:flex; align-items:flex-start; gap: 24px;
   margin: 0 0 9mm;
-  font-size: 15px;
+  font-size: 15.5px;
 }
-.cover-col{ flex:1; line-height: 2.1; }
+.cover-col{ flex:1; line-height: 2.15; }
+.cover-col p{ margin:0; }
 .cover-col-head{
-  font-family: var(--font-cover); font-weight:700; color: var(--cover-accent-dark); font-size: 14.5px;
-  text-transform:uppercase; letter-spacing:.05em; margin: 0 0 5px;
+  font-family: var(--font-cover); font-weight:800; color: var(--cover-accent-dark); font-size: 15px;
+  text-transform:uppercase; letter-spacing:.07em; margin: 0 0 7px; padding-bottom:5px;
+  border-bottom: 1.5px solid var(--cover-accent-tint);
 }
-.cover-col span{ color:#5a6272; display:inline-block; min-width: 92px; }
+.cover-col span{ color:#5a6272; display:inline-block; min-width: 92px; font-weight:600; }
+.cover-col b{ font-weight:800; color:#12151c; letter-spacing:.005em; }
 .cover-divider{ width:1px; align-self:stretch; background: #d8dce6; }
+
+/* ---- Group submission: numbered list of "Name — Roll" pairs, replacing the
+   single Name/Roll/Reg/Exam-Roll/Batch block under "Submitted By" when the
+   group toggle is on. ---- */
+.cover-group-list{
+  list-style: none; counter-reset: grp; margin:0 0 6px; padding:0;
+}
+.cover-group-list li{
+  counter-increment: grp;
+  margin: 0 0 6px; padding-left: 22px; position:relative;
+}
+.cover-group-list li::before{
+  content: counter(grp) ".";
+  position:absolute; left:0; top:0;
+  font-weight:700; color: var(--cover-accent-dark);
+}
+.cover-group-list li b{ font-weight:800; color:#12151c; }
+.cover-group-list li span{ color:#5a6272; font-weight:600; }
+.cover-group-batch{ margin:6px 0 0 !important; }
 
 .cover-footer{
   display:flex; justify-content:space-between; align-items:flex-end;
@@ -581,7 +628,7 @@ select{ appearance:none; -webkit-appearance:none;
 .cover-page[data-template="frame"] .cover-footer{ border-top: 1px solid #171c26; padding-top:8mm; margin-top:4mm; }
 
 /* ---------- COMPACT: dense two-column header, boxed info grid ---------- */
-.cover-page[data-template="compact"] .cover-inner{ padding: 14mm 16mm 12mm; }
+.cover-page[data-template="compact"] .cover-inner{ padding: 14mm 16mm 12mm; justify-content:flex-start; }
 .cover-page[data-template="compact"] .cover-header{
   display:flex; align-items:center; gap:12px; text-align:left;
   border-bottom: 2px solid var(--cover-accent); padding-bottom: 8px;
@@ -619,6 +666,7 @@ select{ appearance:none; -webkit-appearance:none;
 .cover-page[data-font="lora"]{ --font-cover: var(--font-serif); }
 .cover-page[data-font="sans"]{ --font-cover: var(--font-ui); }
 .cover-page[data-font="mono"]{ --font-cover: ui-monospace, 'Roboto Mono', 'Courier New', monospace; }
+.cover-page[data-font="bangla"]{ --font-cover: var(--font-bangla); }
 
 /* ---- Title case ---- */
 .cover-page[data-titlecase="upper"] .cover-institution,
